@@ -132,7 +132,10 @@
 		</div> -->
 
 		<div class="w-full sm:max-w-md px-10 min-h-screen flex flex-col text-center">
-			{#if ($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false}
+			{#if
+				($config?.features.auth_trusted_header ?? false)
+				|| (Object.keys($config?.oauth?.providers ?? {}).length === 0 && $config?.features.auth === false)
+			}
 				<div class=" my-auto pb-10 w-full">
 					<div
 						class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-medium dark:text-gray-200"
@@ -150,6 +153,7 @@
 				</div>
 			{:else}
 				<div class="  my-auto pb-10 w-full dark:text-gray-100">
+					{#if $config?.features.auth}
 					<form
 						class=" flex flex-col justify-center"
 						on:submit|preventDefault={() => {
@@ -247,6 +251,7 @@
 							{/if}
 						</div>
 					</form>
+					{/if}
 
 					{#if Object.keys($config?.oauth?.providers ?? {}).length > 0}
 						<div class="inline-flex items-center justify-center w-full">
