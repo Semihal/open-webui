@@ -1920,8 +1920,7 @@ async def oauth_callback(provider: str, request: Request, response: Response):
         # If the user does not exist, check if signups are enabled
         if ENABLE_OAUTH_SIGNUP.value:
             # Check if an existing user with the same email already exists
-            email_claim = webui_app.state.config.OAUTH_USERNAME_CLAIM
-            existing_user = Users.get_user_by_email(user_data.get(email_claim, "").lower())
+            existing_user = Users.get_user_by_email(user_data.get("email", "").lower())
             if existing_user:
                 raise HTTPException(400, detail=ERROR_MESSAGES.EMAIL_TAKEN)
 
@@ -1951,12 +1950,13 @@ async def oauth_callback(provider: str, request: Request, response: Response):
                 if Users.get_num_users() == 0
                 else webui_app.state.config.DEFAULT_USER_ROLE
             )
+            username_claim = webui_app.state.config.OAUTH_USERNAME_CLAIM
             user = Auths.insert_new_auth(
                 email=email,
                 password=get_password_hash(
                     str(uuid.uuid4())
                 ),  # Random password, not used
-                name=user_data.get("name", "User"),
+                name=user_data.get(username_claim, "User"),
                 profile_image_url=picture_url,
                 role=role,
                 oauth_sub=provider_sub,
@@ -1985,7 +1985,7 @@ async def oauth_callback(provider: str, request: Request, response: Response):
     # Set the cookie token
     response.set_cookie(
         key="token",
-        value=jwt_token,
+        value=token,
         httponly=True,  # Ensures the cookie is not accessible via JavaScript
     )
 
